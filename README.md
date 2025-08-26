@@ -28,7 +28,7 @@ The  Biological  Random  Walk  heuristic  provides  a  framework  to  integrateh
 
 ![alt text](https://github.com/LeoM93/BiologicalRandomWalks/blob/master/imgs/BRW_flow.png?raw=true)
 
-Biological Random  Walks flow propagation: given the seed nodes (star nodes), the flow propagates to his neighbors. The BRW not only propagatethe  flow  around  them  but  also  teleports  the  flow  to  the  target  of  the  BTP  nodes  (blue  arrows).  So  it  discovers  nodes  that  are  biologically  correlated  to  theseed nodes (just through the BTP, left-lower test node) and those nodes that aren’t reached directly to the BTP but are close to many related nodes.
+Biological Random  Walks flow propagation: given the seed nodes (star nodes), the flow propagates to his neighbors. The BRW not only propagatethe  flow  around  them  but  also  teleports  the  flow  to  the  target  of  the  BTP  nodes  (blue  arrows).  So  it  discovers  nodes  that  are  biologically  correlated  to  theseed nodes (just through the BTP, left-lower test node) and those nodes that aren't reached directly to the BTP but are close to many related nodes.
 
 ## Python Libraries
 Imported libraries and their version:
@@ -37,10 +37,7 @@ Imported libraries and their version:
 - networkx, version 2.4
 - sklearn, version 0.23.1 
 
-
-
 ## Data Preprocessing
-
 
 ### Computing the Ontology Graph
 
@@ -103,9 +100,6 @@ Once Tumor and control Table have been created following the steps described abo
  python3 compute_co_expression_and_de_genes.py -T <path to TCGA Tumor Table> -C <path to TCGA Control Table> -de <de output file path> -co < co-expression network output file path>  
 ```
 
-
-
-
 ## Running Biological Random Walks
 
 ### Input files and formats
@@ -119,7 +113,7 @@ They are:
  ```
  - co_expression_network.tsv: A Weighted Co-Expression network in tab separated format
  ```
- < ensembl_id_1> \t < ensembl_id_2 > \t < score >
+ < ensembl_id_1> \t < ensembl_id_2 > \t <score >
  ```
  - seed_set.tsv: A list genes  (each row contains one ensembl id)
  - de_genes.tsv: A list of Differentially Expressed (DE) gene (each row contains one ensembl id)
@@ -133,7 +127,6 @@ They are:
  ```
 
 ### How to Install and run Biological Random Walks
-
 
 To install the framework download the zip file and decompress it. Then, Iin order to run the algorithm, from terminal go in the BRW directory and type "python3 main.py" followed by option:
 
@@ -160,5 +153,178 @@ To Run the algorithm described in [1], all the options are required,to choose th
  ```
  python3 main.py -p <ppi network file path> -c <path to co-expressiion network> -s <path to seed set> -de <path to de genes> -a <path to ontology graph> -do <path to seed enriched ontologies> -o <output file path>
  ```
+
+### Batch Processing with run_brw_batch.py
+
+For automated batch processing across multiple cancer types and configurations, use the `run_brw_batch.py` script:
+
+```bash
+cd BiologicalRandomWalks
+python run_brw_batch.py
+```
+
+**What it does:**
+- **Automatically processes all 7 cancer types** (BRCA, COAD, LUAD, THCA, BLCA, PRAD, STAD)
+- **Runs all ablation configurations** (FULL, noCOEXP, noDE, noONTO, PPI_only)
+- **Tests 10 alpha-beta combinations** including common values like (0.5, 0.5), (0.75, 0.25), etc.
+- **Generates comprehensive results** in `outputs/<Cancer>/` directories
+- **Creates summary.csv** with all results for analysis
+
+**Output structure:**
+```
+outputs/
+├── BRCA/
+│   ├── results_FULL.txt
+│   ├── results_noCOEXP.txt
+│   ├── results_FULL_A0.5_B0.5.txt
+│   ├── top100_FULL.tsv
+│   └── ...
+├── COAD/
+│   └── ...
+└── summary.csv
+```
+
+**Use cases:**
+- **Research validation**: Test all configurations systematically
+- **Parameter optimization**: Find best alpha-beta combinations
+- **Comparative analysis**: Compare performance across cancer types
+- **Batch processing**: Run overnight for comprehensive results
+
+---
+
+# BRW GUI - Interactive Web Interface
+
+## Overview
+
+The BRW GUI provides a user-friendly web interface for running Biological Random Walks analysis without command-line knowledge. It allows interactive parameter configuration, batch processing, and comprehensive result visualization.
+
+## Quick Start
+
+### 1. Install GUI Dependencies
+```bash
+pip install streamlit pandas mygene openpyxl
+```
+
+### 2. Launch the GUI
+```bash
+cd BiologicalRandomWalks
+streamlit run app_gui.py
+```
+
+The application will open in your browser at `http://localhost:8501`
+
+## GUI Features
+
+### **Input Settings Panel**
+- **Cancer Selection**: Choose from 7 cancer types (BRCA, COAD, LUAD, THCA, BLCA, PRAD, STAD)
+- **Ablation Options**: Select which data types to include:
+  - `FULL`: All data types (PPI + Co-expression + DE genes + Ontology)
+  - `noCOEXP`: Exclude co-expression networks
+  - `noDE`: Exclude differentially expressed genes
+  - `noONTO`: Exclude ontology data
+  - `PPI_only`: Only PPI network
+- **Restart Probability**: Configure random walk restart parameter (0.1 - 0.99)
+
+### **Matrix Weights Panel**
+- **Multiple Alpha-Beta Pairs**: Configure up to 10 pairs of weights
+- **Quick Presets**: Load common combinations or reset to defaults
+- **Interactive Editing**: Modify each pair individually with real-time updates
+
+### **Execution Modes**
+- **Run BRW Now**: Execute pipeline with current settings
+- **Load from Summary**: Read existing results from `outputs/summary.csv`
+
+### **Results & Visualization**
+- **Detailed Results Table**: View all combinations and OncoKB hits
+- **Comparison Charts**: 
+  - Average hits by ablation option
+  - Average hits by alpha-beta pair
+  - Heatmap visualization
+  - Restart probability analysis
+- **Summary Statistics**: Best option, average hits, total runs
+- **Export Functionality**: Download results as CSV
+
+## Understanding GUI Results
+
+### **OncoKB Hits Interpretation**
+- **Higher hits** = Better gene prioritization
+- **Compare options** to understand which data types contribute most
+- **Analyze alpha-beta pairs** to find optimal network combination weights
+
+### **Ablation Analysis via GUI**
+- `FULL` vs `noCOEXP`: Impact of co-expression networks
+- `FULL` vs `noDE`: Impact of differentially expressed genes  
+- `FULL` vs `noONTO`: Impact of ontology data
+- `PPI_only`: Baseline with only protein-protein interactions
+
+### **Matrix Weight Optimization**
+- **Alpha (α)**: Weight for PPI network
+- **Beta (β)**: Weight for co-expression network
+- **Optimal combinations** typically show higher OncoKB hits
+
+## Advanced GUI Usage
+
+### **Batch Processing**
+- Run multiple cancer types by changing selection
+- Test various parameter combinations systematically
+- Compare results across different configurations
+
+### **Result Analysis**
+- Use "Load from summary.csv" mode for existing results
+- Filter by specific options or alpha-beta pairs
+- Generate publication-ready visualizations
+
+### **Parameter Tuning**
+- Experiment with different alpha-beta combinations
+- Test various restart probability values
+- Compare ablation configurations
+
+## GUI Troubleshooting
+
+### **Common Issues**
+
+1. **Missing Dependencies**
+   ```bash
+   pip install --upgrade streamlit pandas mygene openpyxl
+   ```
+
+2. **File Not Found Errors**
+   - Ensure all required data files exist in `data_set/`
+   - Check if `Dataset OncoKB.xlsx` is in the root directory
+
+3. **Memory Issues**
+   - Reduce the number of alpha-beta pairs
+   - Process one cancer type at a time
+
+4. **Slow Performance**
+   - Close other applications
+   - Reduce the number of combinations
+   - Use "Load from summary.csv" for existing results
+
+### **Error Messages**
+
+- **"Missing PPI"**: Check if `data_set/ppi_network/HIPPIE.tsv` exists
+- **"Missing seed set"**: Verify seed files in `data_set/seed_set/`
+- **"Missing co-expression"**: Ensure co-expression networks are present
+- **"Missing OncoKB Excel"**: Check if `Dataset OncoKB.xlsx` is in the root directory
+
+## GUI File Structure
+
+```
+BiologicalRandomWalks/
+├── app_gui.py              # Main GUI application
+├── main.py                 # BRW execution script (original)
+├── check_genes.py          # OncoKB validation
+├── data_set/               # Input data directory
+│   ├── ppi_network/        # PPI networks
+│   ├── co-expression_networks/  # Co-expression data
+│   ├── differentially_expressed_genes/  # DE genes
+│   ├── ontology/           # Ontology graphs
+│   └── seed_set/           # Seed gene sets
+├── outputs/                 # Results directory
+│   └── summary.csv         # Summary results
+└── Dataset OncoKB.xlsx     # OncoKB database
+```
+
 
 
