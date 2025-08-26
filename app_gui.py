@@ -134,65 +134,75 @@ def load_summary(summary_path: Path) -> pd.DataFrame:
 st.set_page_config(page_title="BRW GUI", layout="wide")
 st.title("Biological Random Walks")
 
-mode = st.sidebar.radio("Mode", ["Run BRW now", "Load from summary.csv"]) 
+mode = st.sidebar.radio("Mode", ["Execute BRW", "Load results from summary.csv"]) 
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Input Settings**", help="Configure input data and algorithm parameters")
-cancer = st.sidebar.selectbox("Cancer", CANCERS, index=0)
-selected_opts = st.sidebar.multiselect(
-    "Select options (ablation)", list(ABLATIONS.keys()), default=["FULL", "noCOEXP", "noDE", "noONTO", "PPI_only"],
-)
 
-# Restart probability
-restart_prob = st.sidebar.number_input("Restart probability (r)", min_value=0.1, max_value=0.99, value=0.9, step=0.05)
+if mode == "Execute BRW":
+    cancer = st.sidebar.selectbox("Cancer", CANCERS, index=0)
+    selected_opts = st.sidebar.multiselect(
+        "Select options (ablation)", list(ABLATIONS.keys()), default=["FULL", "noCOEXP", "noDE", "noONTO", "PPI_only"],
+    )
 
-# Separator between options and alpha-beta
-st.sidebar.markdown("---")
-st.sidebar.markdown("**Matrix Weights**", help="Configure alpha-beta weights for network combination")
+    # Restart probability
+    restart_prob = st.sidebar.number_input("Restart probability (r)", min_value=0.1, max_value=0.99, value=0.9, step=0.05)
 
-# Initialize session state for alpha-beta pairs
-if 'alpha_beta_pairs' not in st.session_state:
-    st.session_state.alpha_beta_pairs = [(0.5, 0.5), (0.25, 0.75), (0.75, 0.25)]
+    # Separator between options and alpha-beta
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**Matrix Weights**", help="Configure alpha-beta weights for network combination")
 
-# Quick presets
-
-col1, col2 = st.sidebar.columns(2)
-
-with col1:
-    if st.button("Load", use_container_width=True, help="Load 7 common alpha-beta pairs"):
-        st.session_state.alpha_beta_pairs = [(1.0, 1.0), (0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.5, 0.5), (0.75, 0.25), (0.25, 0.75)]
-
-with col2:
-    if st.button("Reset", use_container_width=True, help="Reset to 3 default pairs"):
+    # Initialize session state for alpha-beta pairs
+    if 'alpha_beta_pairs' not in st.session_state:
         st.session_state.alpha_beta_pairs = [(0.5, 0.5), (0.25, 0.75), (0.75, 0.25)]
 
-# Number of pairs control
-num_pairs = st.sidebar.number_input("Number of alpha-beta pairs", min_value=1, max_value=10, value=len(st.session_state.alpha_beta_pairs), step=1, help="Adjust number of alpha-beta pairs")
-
-# Ensure we have enough pairs
-while len(st.session_state.alpha_beta_pairs) < num_pairs:
-    st.session_state.alpha_beta_pairs.append((0.5, 0.5))
-
-# Trim if too many
-if len(st.session_state.alpha_beta_pairs) > num_pairs:
-    st.session_state.alpha_beta_pairs = st.session_state.alpha_beta_pairs[:num_pairs]
-
-# Display and edit pairs
-for i in range(num_pairs):
+    # Quick presets
     col1, col2 = st.sidebar.columns(2)
+
     with col1:
-        alpha = col1.number_input(f"α{i+1}", min_value=0.0, max_value=1.0, value=st.session_state.alpha_beta_pairs[i][0], step=0.05, key=f"alpha_{i}", help=f"Alpha value for pair {i+1}")
+        if st.button("Load", use_container_width=True, help="Load 7 common alpha-beta pairs"):
+            st.session_state.alpha_beta_pairs = [(1.0, 1.0), (0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.5, 0.5), (0.75, 0.25), (0.25, 0.75)]
+
     with col2:
-        beta = col2.number_input(f"β{i+1}", min_value=0.0, max_value=1.0, value=st.session_state.alpha_beta_pairs[i][1], step=0.05, key=f"beta_{i}", help=f"Beta value for pair {i+1}")
-    
-    # Update session state
-    st.session_state.alpha_beta_pairs[i] = (alpha, beta)
+        if st.button("Reset", use_container_width=True, help="Reset to 3 default pairs"):
+            st.session_state.alpha_beta_pairs = [(0.5, 0.5), (0.25, 0.75), (0.75, 0.25)]
 
-# Use the session state
-alpha_beta_pairs = st.session_state.alpha_beta_pairs
+    # Number of pairs control
+    num_pairs = st.sidebar.number_input("Number of alpha-beta pairs", min_value=1, max_value=10, value=len(st.session_state.alpha_beta_pairs), step=1, help="Adjust number of alpha-beta pairs")
+
+    # Ensure we have enough pairs
+    while len(st.session_state.alpha_beta_pairs) < num_pairs:
+        st.session_state.alpha_beta_pairs.append((0.5, 0.5))
+
+    # Trim if too many
+    if len(st.session_state.alpha_beta_pairs) > num_pairs:
+        st.session_state.alpha_beta_pairs = st.session_state.alpha_beta_pairs[:num_pairs]
+
+    # Display and edit pairs
+    for i in range(num_pairs):
+        col1, col2 = st.sidebar.columns(2)
+        with col1:
+            alpha = col1.number_input(f"α{i+1}", min_value=0.0, max_value=1.0, value=st.session_state.alpha_beta_pairs[i][0], step=0.05, key=f"alpha_{i}", help=f"Alpha value for pair {i+1}")
+        with col2:
+            beta = col2.number_input(f"β{i+1}", min_value=0.0, max_value=1.0, value=st.session_state.alpha_beta_pairs[i][1], step=0.05, key=f"beta_{i}", help=f"Beta value for pair {i+1}")
+        
+        # Update session state
+        st.session_state.alpha_beta_pairs[i] = (alpha, beta)
+
+    # Use the session state
+    alpha_beta_pairs = st.session_state.alpha_beta_pairs
+else:
+    # Minimal controls for Load mode
+    cancer = st.sidebar.selectbox("Cancer", CANCERS, index=0)
+    st.sidebar.markdown("---")
+    uploaded_summary = st.sidebar.file_uploader("Upload summary CSV (optional)", type=["csv"], help="If provided, this file will be used instead of outputs/summary.csv")
+    # Defaults (not shown as controls): 5 options, 10 alpha-beta pairs, r = 0.9
+    selected_opts = list(ABLATIONS.keys())
+    alpha_beta_pairs = [(1.0, 1.0), (0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.5, 0.5), (0.75, 0.25), (0.25, 0.75), (0.6, 0.4), (0.4, 0.6), (0.8, 0.2)]
+    restart_prob = 0.9
 
 
-if mode == "Run BRW now":
+if mode == "Execute BRW":
     st.subheader("Run BRW for 1 cancer with multiple options and alpha-beta")
     st.write(f"App will run {len(selected_opts)} options × {len(alpha_beta_pairs)} alpha-beta pairs = {len(selected_opts) * len(alpha_beta_pairs)} combinations")
     st.write(f"**Restart probability:** r = {restart_prob:.2f}")
@@ -273,36 +283,23 @@ if mode == "Run BRW now":
                 st.bar_chart(restart_avg.set_index("Restart_prob")["OncoKB_hits"])
 
 else:
-    st.subheader("Quick load from outputs/summary.csv")
-    summary_path = OUT / "summary.csv"
-    df_sum = load_summary(summary_path)
+    st.subheader("Load Results from Summary File")
+    if 'uploaded_summary' in locals() and uploaded_summary is not None:
+        try:
+            df_sum = pd.read_csv(uploaded_summary)
+        except Exception as e:
+            st.error(f"Failed to read uploaded CSV: {e}")
+            df_sum = pd.DataFrame()
+    else:
+        summary_path = OUT / "summary.csv"
+        df_sum = load_summary(summary_path)
     if df_sum.empty:
         st.warning(f"No summary file found: {summary_path}")
     else:
         df_view = df_sum[df_sum["Cancer"] == cancer]
         
         if not df_view.empty:
-            # Filter by selected options if any
-            if selected_opts:
-                df_view = df_view[df_view["Tag"].str.contains("|".join(selected_opts), case=False, na=False)]
-            
-            # Filter by alpha-beta pairs if any
-            if alpha_beta_pairs:
-                # Extract alpha-beta from tags like "FULL_A0.5_B0.5"
-                def extract_alpha_beta(tag):
-                    import re
-                    match = re.search(r'A([\d.]+)_B([\d.]+)', tag)
-                    if match:
-                        return float(match.group(1)), float(match.group(2))
-                    return None, None
-                
-                df_view['Extracted_Alpha'] = df_view['Tag'].apply(lambda x: extract_alpha_beta(x)[0])
-                df_view['Extracted_Beta'] = df_view['Tag'].apply(lambda x: extract_alpha_beta(x)[1])
-                
-                # Filter by selected alpha-beta pairs
-                mask = df_view.apply(lambda row: 
-                    (row['Extracted_Alpha'], row['Extracted_Beta']) in alpha_beta_pairs, axis=1)
-                df_view = df_view[mask]
+            # In Load mode, only filter by Cancer; show all matching rows
             
             st.dataframe(df_view, use_container_width=True)
             
@@ -333,7 +330,7 @@ else:
 st.markdown("---")
 
 # Summary statistics
-if mode == "Run BRW now" and 'results' in locals() and results:
+if mode == "Execute BRW" and 'results' in locals() and results:
     st.subheader("📊 Summary Statistics")
     col1, col2, col3 = st.columns(3)
     
@@ -360,7 +357,7 @@ if mode == "Run BRW now" and 'results' in locals() and results:
         mime="text/csv"
     )
 
-elif mode == "Load from summary.csv" and 'df_view' in locals() and not df_view.empty:
+elif mode == "Load results from summary.csv" and 'df_view' in locals() and not df_view.empty:
     st.subheader("📊 Statistics from summary.csv")
     col1, col2, col3 = st.columns(3)
     
@@ -375,6 +372,16 @@ elif mode == "Load from summary.csv" and 'df_view' in locals() and not df_view.e
     with col3:
         total_results = len(df_view)
         st.metric("Total results", total_results)
+
+    # Export filtered summary results
+    st.subheader("💾 Export Results")
+    csv_data = df_view.to_csv(index=False)
+    st.download_button(
+        label="Download CSV",
+        data=csv_data,
+        file_name=f"BRW_summary_{cancer}.csv",
+        mime="text/csv"
+    )
 
 st.markdown("---")
 st.caption("💡 **Tip:** Run with `streamlit run app_gui.py` in the `BiologicalRandomWalks` directory. Requirements: `pandas`, `streamlit`, `mygene`, `openpyxl`.")

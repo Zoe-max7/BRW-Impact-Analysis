@@ -95,7 +95,10 @@ class Loader():
 			for index,row in enumerate(csv_reader):
 				if index == 0:
 					continue
-				
+ 
+				if not row or len(row) < 2:
+					continue
+ 
 				gene_name = row[0]
 				term_id = row[1]
 				db = row[2]

@@ -17,7 +17,7 @@ class OntologyGraph():
 	
 	def __load_uniprot_mapping__(self,):
 		
-		csv_reader = csv.reader(open(self.UniprotKB__Ensembl__mapping_file_path,"r"),delimiter = "\t")
+		csv_reader = csv.reader(open(self.UniprotKB__Ensembl__mapping_file_path,"r", encoding="utf-8"),delimiter = "\t")
 		self.map__uniprotkb__ensembl_id = {}
 		
 		for index, row in enumerate(csv_reader):
@@ -36,7 +36,7 @@ class OntologyGraph():
 
 
 	def __load_KEGG_to_uniprot_mapping__(self,):
-		csv_reader = csv.reader(open(self.KEGG__UniprotKB__mapping_file_path,"r"),delimiter = "\t")
+		csv_reader = csv.reader(open(self.KEGG__UniprotKB__mapping_file_path,"r", encoding="utf-8"),delimiter = "\t")
 		self.map__KEGG__uniprot_id = {}
 		
 		for index, row in enumerate(csv_reader):
@@ -57,7 +57,7 @@ class OntologyGraph():
 
 
 	def __load_go__(self,):
-		csv_reader = csv.reader(open(self.GO_file_path,"r"),delimiter = "\t")
+		csv_reader = csv.reader(open(self.GO_file_path,"r", encoding="utf-8"),delimiter = "\t")
 		self.map__ensembl_id__gene_ontologies = {}
 		
 		for row in csv_reader:
@@ -83,7 +83,7 @@ class OntologyGraph():
 				
 
 	def __load_reactome__(self,):
-		csv_reader = csv.reader(open(self.Reactome_file_path,"r"),delimiter = "\t")
+		csv_reader = csv.reader(open(self.Reactome_file_path,"r", encoding="utf-8"),delimiter = "\t")
 		
 		for row in csv_reader:
 
@@ -102,7 +102,7 @@ class OntologyGraph():
 
 	
 	def __load_KEGG__(self,):
-		csv_reader = csv.reader(open(self.KEGG_file_path,"r"),delimiter = "\t")
+		csv_reader = csv.reader(open(self.KEGG_file_path,"r", encoding="utf-8"),delimiter = "\t")
 		
 		for row in csv_reader:
 
@@ -128,7 +128,7 @@ class OntologyGraph():
 	def __save_final_ontology__(self,):
 		
 		annotation_graph = []
-		csv_writer = csv.writer(open(self.output_ontology_network_path, "w"),delimiter = "\t")
+		csv_writer = csv.writer(open(self.output_ontology_network_path, "w", encoding="utf-8"),delimiter = "\t")
 		csv_writer.writerow(["gene_id","term_id","DB"])
 
 		for k,v in self.map__ensembl_id__gene_ontologies.items():
